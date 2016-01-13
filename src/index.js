@@ -17,8 +17,7 @@ function firstDefined(...args) {
 
 function bundleFile(file) {
   if (file.buffer) return file;
-  const stream = readFile(file.path);
-  return stream.buffer().then(buffer => {
+  return readFile(file.path).then(buffer => {
     return [
       {
         name: file.name,
@@ -30,7 +29,7 @@ function bundleFile(file) {
 }
 function bundleFolder(folder) {
   const stream = barrage(pack(folder.path, {ignoreFiles: []}));
-  return stream.buffer().then(buffer => {
+  return stream.buffer('buffer').then(buffer => {
     return [
       {
         name: folder.name + '.tgz',
@@ -39,6 +38,23 @@ function bundleFolder(folder) {
       },
     ];
   });
+}
+
+function validateTag(tag) {
+  const split = tag.split('/');
+  for (const component of split) {
+    if (component[0] === '.') throw new Error('Invalid Tag: no slash-separated component can begin with a dot "."');
+    if (/\.lock/.test(component)) throw new Error('Invalid Tag: no slash-separated component can end with ".lock"');
+  }
+  if (tag.indexOf('..') !== -1) throw new Error('Invalid Tag: cannot have two consecutive dots ".."');
+  // They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space,
+  // tilde ~, caret ^, or colon : anywhere.
+  for (const char of [' ', '~', '^', ':', '?', '[', ']', '*', '\\']) {
+    if (tag.indexOf(char) !== -1) throw new Error('Invalid Tag: cannot have "' + char + '"');
+  }
+  if (tag[tag.length - 1] === '.') throw new Error('Invalid Tag: cannot end with a dot "."');
+  if (tag.indexOf('@{') !== -1) throw new Error('Invalid Tag: cannot contain the sequence "@{"');
+  if (tag === '@') throw new Error('Invalid Tag: cannot be the character "@"');
 }
 
 export default function createRelease(auth, username, reponame, release) {
@@ -50,7 +66,7 @@ export default function createRelease(auth, username, reponame, release) {
     name: firstDefined(release.name, release.tag),
     body: firstDefined(release.body, ''),
     draft: true,
-    prerelease: firstDefined(release.preprelease, false),
+    prerelease: firstDefined(release.prerelease, false),
   };
   if (!username) {
     throw new TypeError('username is required');
@@ -70,6 +86,7 @@ export default function createRelease(auth, username, reponame, release) {
   if (typeof opts.tag_name !== 'string') {
     throw new TypeError('release.tag should be a string but got ' + typeof opts.tag_name);
   }
+  validateTag(opts.tag_name);
   if (typeof opts.target_commitish !== 'string') {
     throw new TypeError('release.target should be a string but got ' + typeof opts.target_commitish);
   }
@@ -117,7 +134,7 @@ export default function createRelease(auth, username, reponame, release) {
       if (asset.label !== undefined) args.label = asset.label;
       return request('POST', uploadUrl.fill(args), {headers, body: asset.body});
     })).then(() => {
-      return client.patch(release.url, {draft: false});
+      return client.patch(release.url, {...opts, draft: false});
     });
   });
 }
