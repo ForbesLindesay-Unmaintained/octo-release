@@ -1,6 +1,10 @@
 import test from 'testit';
 import octoRelease from '../src';
 
+if (process.env.TRAVIS_TAG) {
+  console.log('Refusing to build a tag');
+  process.exit(0);
+}
 test('upload a new release', () => {
   const time = (new Date()).toISOString();
   console.log(time);
