@@ -12,7 +12,9 @@ test('upload a new release', () => {
     tag: time.replace(/\:/g, ''),
     name: time,
     prerelease: true,
-    files: [{name: 'file-1.txt', path: __dirname + '/assets/file-1.txt'}],
-    folders: [{name: 'assets', path: __dirname + '/assets/'}],
+    assets: [
+      {name: 'file-1.txt', path: __dirname + '/assets/file-1.txt'},
+      {name: 'assets', path: __dirname + '/assets/'},
+    ],
   });
 });

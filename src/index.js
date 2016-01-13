@@ -25,6 +25,10 @@ function bundleFile(file) {
         body: buffer,
       },
     ];
+  }, err => {
+    if (err.code === 'EISDIR') {
+      return bundleFolder(file);
+    }
   });
 }
 function bundleFolder(folder) {
@@ -99,17 +103,11 @@ export default function createRelease(auth, username, reponame, release) {
   if (typeof opts.prerelease !== 'boolean') {
     throw new TypeError('release.prerelease should be a boolean but got ' + typeof opts.prerelease);
   }
-  const folders = firstDefined(release.folders, []);
-  const files = firstDefined(release.files, []);
-  if (!Array.isArray(folders)) {
-    throw new TypeError('Expected release.folders to be an array but got ' + typeof folders);
-  }
-  if (!Array.isArray(files)) {
-    throw new TypeError('Expected release.files to be an array but got ' + typeof files);
-  }
-  const assets = Promise.all(folders.map(bundleFolder).concat(files.map(bundleFile))).then(folders => {
-    return folders.reduce((acc, val) => acc.concat(val), []);
-  });
+  const assets = Promise.all(
+    firstDefined(release.assets, []).map(bundleFile)
+  ).then(
+    folders => folders.reduce((acc, val) => acc.concat(val), [])
+  );
   return Promise.all([
     client.post(url, opts),
     assets,
