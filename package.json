@@ -11,6 +11,7 @@
     "barrage": "^1.1.0",
     "github-basic": "^5.0.0",
     "mime": "^1.3.4",
+    "promise": "^7.1.1",
     "tar-pack": "^3.1.2",
     "uri-templates": "^0.1.9"
   },
