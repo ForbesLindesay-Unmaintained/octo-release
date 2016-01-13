@@ -3,6 +3,7 @@ import octoRelease from '../src';
 
 test('upload a new release', () => {
   const time = (new Date()).toISOString();
+  console.log(time);
   return octoRelease(process.env.GITHUB_TOKEN, 'scriptit', 'octo-release', {
     tag: time.replace(/\:/g, ''),
     name: time,
