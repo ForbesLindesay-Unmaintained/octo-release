@@ -17,7 +17,16 @@ npm install octo-release --save
 ```js
 var octoRelease = require('octo-release');
 
-// ...
+var time = (new Date()).toISOString();
+octoRelease(process.env.GITHUB_TOKEN, 'scriptit', 'octo-release', {
+  tag: time.replace(/\:/g, ''),
+  name: time,
+  prerelease: true,
+  files: [{name: 'file-1.txt', path: __dirname + '/assets/file-1.txt'}],
+  folders: [{name: 'assets', path: __dirname + '/assets/'}],
+}).done(function () {
+  console.log('done');
+});
 ```
 
 ## License
