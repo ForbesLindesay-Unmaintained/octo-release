@@ -4,7 +4,9 @@
   "main": "lib/index.js",
   "description": "Create or update github releases from the command line",
   "keywords": [],
-  "bin": "./lib/cli.js",
+  "bin": {
+    "octo-release": "./lib/cli.js"
+  },
   "files": [
     "lib/"
   ],
